@@ -11,7 +11,7 @@ Sistem web manajemen projek berbasis Laravel untuk mengelola klien, kontak, pake
 - **Frontend**: Blade Templates, Tailwind CSS, dan JavaScript vanilla / Alpine.js ringan.
 - **Autentikasi & Otorisasi**: Laravel Auth (`web` guard) dengan hashing Bcrypt/Argon2 bawaan Laravel, serta Laravel Policies untuk kontrol akses berbasis role dan kepemilikan unit/projek.
 - **Batasan Sistem**: Tidak ada payment gateway otomatis, webhook, fitur chat internal, DP, atau pembayaran termin/bertahap. File dokumen/deliverable/bukti bayar disimpan sebagai tautan eksternal (`TEXT`), bukan upload binary ke server/BLOB.
-- **Single Source of Truth**: Ikuti struktur aktual `database/schema.sql` untuk nama tabel, kolom, relasi, dan constraint. Jangan mengasumsikan constraint database yang tidak tertulis di `schema.sql`.
+- **Single Source of Truth**: Ikuti struktur aktual `database/schema.sql` untuk nama tabel, kolom, relasi, dan constraint. Jangan mengasumsikan constraint database yang tidak tertulis di `schema.sql`, jika harus maka tanyakan dulu.
 
 ## Konteks Bisnis
 
@@ -37,19 +37,19 @@ Terapkan otorisasi melalui **Laravel Policies** dan query scoping pada Eloquent,
 
 1. `unit_bisnis(id, nama_unit, lokasi, timestamps)`
 2. `jenis_layanan(id, unit_id, kode, nama, timestamps)`
-3. `pakets(id, jenis_layanan_id, harga_dasar, satuan, tipe, deskripsi, is_active, timestamps)` — *Catatan: tidak memiliki kolom `nama`.*
-4. `kliens(id, nama_perusahaan, alamat, timestamps)`
-5. `contacts(id, klien_id, nama, jabatan, nomor_telepon, email, timestamps)` — *`klien_id` dan `nomor_telepon` bersifat nullable.*
-6. `users(id, username, email, password, role, unit_id, contact_id, jabatan, tipe_kontrak, keahlian, remember_token, timestamps)` — *Menggabungkan entitas user, staf, dan kru.*
-7. `projects(id, klien_id, dibuat_oleh, status, sumber, lokasi, tanggal_mulai, tanggal_selesai, deadline, nomor_po, tanggal_po, link_dokumen_po, timestamps)` — *Menggabungkan entitas projek dan PO.*
-8. `project_items(id, project_id, paket_id, tipe_item, kuantitas, harga_satuan_snapshot, timestamps)` — *Total tagihan dihitung dinamis dari `SUM(kuantitas * harga_satuan_snapshot)`, jangan disimpan di kolom.*
+3. `paket(id, jenis_layanan_id, harga_dasar, satuan, tipe, deskripsi, is_active, timestamps)` — *Catatan: tidak memiliki kolom `nama`.*
+4. `klien(id, nama_perusahaan, alamat, timestamps)`
+5. `contact(id, klien_id, nama, jabatan, nomor_telepon, email, timestamps)` — *`klien_id` dan `nomor_telepon` bersifat nullable.*
+6. `user(id, username, email, password, role, unit_id, contact_id, jabatan, tipe_kontrak, keahlian, remember_token, timestamps)` — *Menggabungkan entitas user, staf, dan kru.*
+7. `project(id, klien_id, dibuat_oleh, status, sumber, lokasi, tanggal_mulai, tanggal_selesai, deadline, nomor_po, tanggal_po, link_dokumen_po, timestamps)` — *Menggabungkan entitas projek dan PO.*
+8. `project_item(id, project_id, paket_id, tipe_item, kuantitas, harga_satuan_snapshot, timestamps)` — *Total tagihan dihitung dinamis dari `SUM(kuantitas * harga_satuan_snapshot)`, jangan disimpan di kolom.*
 9. `project_contact(project_id, contact_id, peran)` — *Tabel pivot many-to-many.*
 10. `project_crew(project_id, user_id, peran)` — *Tabel pivot many-to-many.*
 11. `project_tahapans(id, project_id, nama_tahap, urutan, deadline_tahap, selesai, timestamps)`
-12. `deliverables(id, project_id, versi, judul, link, tipe, tahap, tampil_ke_klien, tanggal_kirim)` — *Pasangan `(project_id, versi)` unik; tanpa kolom `created_at`/`updated_at`.*
-13. `project_revisions(id, project_id, jenis, sumber_feedback, deskripsi, status, timestamps)` — *Menggabungkan header revisi dan item revisi.*
-14. `kendalas(id, project_id, kategori, deskripsi, tanggal, status, timestamps)`
-15. `payments(id, project_id, dicatat_oleh, jumlah, metode, tanggal_bayar, bukti, catatan, timestamps)`
+12. `deliverable(id, project_id, versi, judul, link, tipe, tahap, tampil_ke_klien, tanggal_kirim)` — *Pasangan `(project_id, versi)` unik; tanpa kolom `created_at`/`updated_at`.*
+13. `project_revision(id, project_id, jenis, sumber_feedback, deskripsi, status, timestamps)` — *Menggabungkan header revisi dan item revisi.*
+14. `kendala(id, project_id, kategori, deskripsi, tanggal, status, timestamps)`
+15. `payment(id, project_id, dicatat_oleh, jumlah, metode, tanggal_bayar, bukti, catatan, timestamps)`
 16. `project_logs(id, project_id, status_lama, status_baru, diubah_oleh, diubah_at)` — *Audit trail perubahan status projek.*
 
 ## Aturan Implementasi Laravel
