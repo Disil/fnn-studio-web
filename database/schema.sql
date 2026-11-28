@@ -75,12 +75,10 @@ CREATE TABLE user (
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('owner', 'staff', 'kru', 'freelancer', 'klien')),
+    role VARCHAR(20) NOT NULL CHECK (role IN ('owner', 'staff', 'klien')),
     unit_id INT REFERENCES unit_bisnis(id) ON DELETE SET NULL,
     contact_id INT REFERENCES contact(id) ON DELETE SET NULL,
-    -- Atribut khusus staf (nullable)
-    jabatan VARCHAR(100),
-    -- Atribut khusus kru & freelancer (nullable)
+    -- Atribut khusus staff (nullable)
     tipe_kontrak VARCHAR(20) CHECK (tipe_kontrak IN ('internal', 'freelance')),
     keahlian VARCHAR(150),
     remember_token VARCHAR(100),

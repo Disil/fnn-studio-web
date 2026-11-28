@@ -28,7 +28,7 @@ Terapkan otorisasi melalui **Laravel Policies** dan query scoping pada Eloquent,
 
 - `owner`: Akses penuh ke seluruh unit bisnis, katalog harga, manajemen user, projek, pembayaran, dan laporan.
 - `staff`: Mengelola klien, kontak, projek, PO, dan pembayaran; akses projek dibatasi sesuai `unit_id` miliknya.
-- `kru` & `freelancer`: Hanya melihat dan memperbarui progres teknis (tahapan, deliverable, status revisi, kendala) pada projek tempat mereka ditugaskan di `project_crew`. **Freelancer dilarang keras melihat data kontak klien dan data pembayaran.**
+- `freelancer`: Hanya melihat dan memperbarui progres teknis (tahapan, deliverable, status revisi, kendala) pada projek tempat mereka ditugaskan di `project_crew`. **Freelancer dilarang keras melihat data kontak klien dan data pembayaran.**
 - `klien`: Akun terhubung ke `contact_id`; hanya melihat progres dan deliverable dengan `tampil_ke_klien = true` pada projek miliknya.
 
 ## Struktur Database Aktual (12 Tabel)
@@ -40,8 +40,8 @@ Terapkan otorisasi melalui **Laravel Policies** dan query scoping pada Eloquent,
 3. `paket(id, jenis_layanan_id, harga_dasar, satuan, tipe, deskripsi, is_active, timestamps)` — *Catatan: tidak memiliki kolom `nama`.*
 4. `klien(id, nama_perusahaan, alamat, timestamps)`
 5. `contact(id, klien_id, nama, jabatan, nomor_telepon, email, timestamps)` — *`klien_id` dan `nomor_telepon` bersifat nullable.*
-6. `user(id, username, email, password, role, unit_id, contact_id, jabatan, tipe_kontrak, keahlian, remember_token, timestamps)` — *Menggabungkan entitas user, staf, dan kru.*
-7. `project(id, klien_id, dibuat_oleh, status, sumber, lokasi, tanggal_mulai, tanggal_selesai, deadline, nomor_po, tanggal_po, link_dokumen_po, timestamps)` — *Menggabungkan entitas projek dan PO.*
+6. `user(id, username, email, password, role, unit_id, contact_id, tipe_kontrak, keahlian, remember_token, timestamps)`
+7. `project(id, klien_id, dibuat_oleh, status, sumber, lokasi, tanggal_mulai, tanggal_selesai, deadline, nomor_po, tanggal_po, link_dokumen_po, timestamps)`
 8. `project_item(id, project_id, paket_id, tipe_item, kuantitas, harga_satuan_snapshot, timestamps)` — *Total tagihan dihitung dinamis dari `SUM(kuantitas * harga_satuan_snapshot)`, jangan disimpan di kolom.*
 9. `project_contact(project_id, contact_id, peran)` — *Tabel pivot many-to-many.*
 10. `project_crew(project_id, user_id, peran)` — *Tabel pivot many-to-many.*
