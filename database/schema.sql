@@ -75,7 +75,7 @@ CREATE TABLE user (
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('owner', 'staff', 'klien')),
+    role VARCHAR(20) NOT NULL CHECK (role IN ('owner', 'staff', 'freelancer', 'klien')),
     unit_id INT REFERENCES unit_bisnis(id) ON DELETE SET NULL,
     contact_id INT REFERENCES contact(id) ON DELETE SET NULL,
     -- Atribut khusus staff (nullable)
