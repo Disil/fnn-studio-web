@@ -1,0 +1,129 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+/**
+ * @property string $status
+ */
+class Project extends Model
+{
+    protected $table = 'project';
+
+    protected $fillable = [
+        'klien_id',
+        'dibuat_oleh',
+        'status',
+        'sumber',
+        'lokasi',
+        'tanggal_mulai',
+        'tanggal_selesai',
+        'deadline',
+        'nomor_po',
+        'tanggal_po',
+        'link_dokumen_po',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'tanggal_mulai' => 'date',
+            'tanggal_selesai' => 'date',
+            'deadline' => 'date',
+            'tanggal_po' => 'date',
+        ];
+    }
+
+    /** @return Attribute<string, never> */
+    protected function totalTagihan(): Attribute
+    {
+        return Attribute::get(
+            fn (): string => (string) $this->projectItems()
+                ->selectRaw('COALESCE(SUM(kuantitas * harga_satuan_snapshot), 0) AS total')
+                ->value('total'),
+        );
+    }
+
+    /** @return Attribute<string, never> */
+    protected function totalTerbayar(): Attribute
+    {
+        return Attribute::get(
+            fn (): string => (string) $this->payments()
+                ->selectRaw('COALESCE(SUM(jumlah), 0) AS total')
+                ->value('total'),
+        );
+    }
+
+    /** @return BelongsTo<Klien, $this> */
+    public function klien(): BelongsTo
+    {
+        return $this->belongsTo(Klien::class, 'klien_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'dibuat_oleh');
+    }
+
+    /** @return HasMany<ProjectItem, $this> */
+    public function projectItems(): HasMany
+    {
+        return $this->hasMany(ProjectItem::class, 'project_id');
+    }
+
+    /** @return BelongsToMany<Contact, $this> */
+    public function contacts(): BelongsToMany
+    {
+        return $this->belongsToMany(Contact::class, 'project_contact', 'project_id', 'contact_id')
+            ->withPivot('peran');
+    }
+
+    /** @return BelongsToMany<User, $this> */
+    public function crew(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'project_crew', 'project_id', 'user_id')
+            ->withPivot('peran');
+    }
+
+    /** @return HasMany<ProjectTahapan, $this> */
+    public function tahapan(): HasMany
+    {
+        return $this->hasMany(ProjectTahapan::class, 'project_id');
+    }
+
+    /** @return HasMany<Deliverable, $this> */
+    public function deliverables(): HasMany
+    {
+        return $this->hasMany(Deliverable::class, 'project_id');
+    }
+
+    /** @return HasMany<ProjectRevision, $this> */
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(ProjectRevision::class, 'project_id');
+    }
+
+    /** @return HasMany<Kendala, $this> */
+    public function kendala(): HasMany
+    {
+        return $this->hasMany(Kendala::class, 'project_id');
+    }
+
+    /** @return HasMany<Payment, $this> */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'project_id');
+    }
+
+    /** @return HasMany<ProjectLog, $this> */
+    public function logs(): HasMany
+    {
+        return $this->hasMany(ProjectLog::class, 'project_id');
+    }
+}
