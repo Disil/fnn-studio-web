@@ -96,7 +96,7 @@ class DatabaseSeeder extends Seeder
             [
                 'username' => 'staf2',
                 'password' => $password,
-                'role' => 'staff',
+                'role' => 'freelancer',
                 'unit_id' => $innovation->getKey(),
                 'contact_id' => null,
                 'tipe_kontrak' => 'freelance',

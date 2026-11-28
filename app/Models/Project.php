@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -57,6 +58,55 @@ class Project extends Model
                 ->selectRaw('COALESCE(SUM(jumlah), 0) AS total')
                 ->value('total'),
         );
+    }
+
+    /**
+     * @param  Builder<Project>  $query
+     * @return Builder<Project>
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->hasRole('owner')) {
+            return $query;
+        }
+
+        if ($user->hasRole('freelancer')) {
+            return $query->whereHas(
+                'crew',
+                fn (Builder $crew): Builder => $crew->where('user.id', $user->getKey()),
+            );
+        }
+
+        if ($user->hasRole('klien')) {
+            if ($user->contact_id === null) {
+                return $query->whereRaw('1 = 0');
+            }
+
+            return $query
+                ->whereHas(
+                    'contacts',
+                    fn (Builder $contacts): Builder => $contacts->where('contact.id', $user->contact_id),
+                )
+                ->select([
+                    'project.id',
+                    'project.status',
+                    'project.tanggal_mulai',
+                    'project.tanggal_selesai',
+                    'project.deadline',
+                    'project.updated_at',
+                ]);
+        }
+
+        if (! $user->hasRole('staff') || $user->unit_id === null) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query
+            ->whereHas('projectItems')
+            ->whereDoesntHave(
+                'projectItems.paket.jenisLayanan',
+                fn (Builder $services): Builder => $services->where('unit_id', '!=', $user->unit_id),
+            );
     }
 
     /** @return BelongsTo<Klien, $this> */

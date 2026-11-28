@@ -2,9 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $project_id
+ */
 class Payment extends Model
 {
     protected $table = 'payment';
@@ -25,6 +29,26 @@ class Payment extends Model
             'jumlah' => 'decimal:2',
             'tanggal_bayar' => 'date',
         ];
+    }
+
+    /**
+     * @param  Builder<Payment>  $query
+     * @return Builder<Payment>
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->hasRole('owner')) {
+            return $query;
+        }
+
+        if (! $user->hasRole('staff')) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereHas(
+            'project',
+            fn (Builder $projects): Builder => $projects->visibleTo($user),
+        );
     }
 
     /** @return BelongsTo<Project, $this> */

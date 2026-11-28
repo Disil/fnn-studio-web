@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,6 +19,23 @@ class Contact extends Model
         'nomor_telepon',
         'email',
     ];
+
+    /**
+     * @param  Builder<Contact>  $query
+     * @return Builder<Contact>
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->hasRole('owner') || $user->hasRole('staff')) {
+            return $query;
+        }
+
+        if ($user->hasRole('klien') && $user->contact_id !== null) {
+            return $query->whereKey($user->contact_id);
+        }
+
+        return $query->whereRaw('1 = 0');
+    }
 
     /** @return BelongsTo<Klien, $this> */
     public function klien(): BelongsTo

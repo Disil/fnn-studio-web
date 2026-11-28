@@ -18,6 +18,8 @@ use Illuminate\Support\Str;
  * @property string $email
  * @property string $password
  * @property string $role
+ * @property int|null $unit_id
+ * @property int|null $contact_id
  * @property string|null $tipe_kontrak
  * @property string|null $remember_token
  */
@@ -91,13 +93,27 @@ class User extends Authenticatable
 
     public function hasActiveFreelanceProject(): bool
     {
-        if ($this->role !== 'staff' || $this->tipe_kontrak !== 'freelance') {
+        if (! $this->hasRole('freelancer')) {
             return false;
         }
 
         return $this->crewProjects()
             ->whereNotIn('project.status', ['selesai', 'dibatalkan'])
             ->exists();
+    }
+
+    public function hasRole(string $role): bool
+    {
+        if ($role === 'freelancer') {
+            return $this->role === 'freelancer'
+                || ($this->role === 'staff' && $this->tipe_kontrak === 'freelance');
+        }
+
+        if ($role === 'staff') {
+            return $this->role === 'staff' && $this->tipe_kontrak !== 'freelance';
+        }
+
+        return $this->role === $role;
     }
 
     public function initials(): string
